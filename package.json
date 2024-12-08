@@ -1,0 +1,22 @@
+{
+  "name": "discord-bot-account",
+  "version": "1.0.0",
+  "description": "Discord bot for accounting automation for travel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "ts-node src/bot.ts",
+    "dev:server": "tsx watch src/bot.ts"
+  },
+  "author": "Oh-Kang94",
+  "license": "MIT",
+  "dependencies": {
+    "@google-cloud/firestore": "^7.11.0",
+    "discord.js": "^14.16.3",
+    "dotenv": "^16.4.7",
+    "firebase": "^11.0.2",
+    "firebase-admin": "^13.0.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
