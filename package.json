@@ -2,9 +2,10 @@
   "name": "discord-bot-account",
   "version": "1.0.0",
   "description": "Discord bot for accounting automation for travel",
-  "main": "index.js",
+  "main": "bot.js",
   "scripts": {
-    "start": "npm run build:live",
+    "start:dev": "npm run build:live",
+    "start:prod": "ts-node src/bot.ts",
     "build": "tsc -p .",
     "build:live": "nodemon --watch 'src/**/*.ts' --exec 'ts-node' src/bot.ts"
   },

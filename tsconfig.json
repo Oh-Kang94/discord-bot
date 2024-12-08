@@ -1,6 +1,6 @@
 {
     "compilerOptions": {
-        "target": "ES6",
+        "target": "ES2020", // ES2020 이상으로 설정
         "module": "CommonJS",
         "strict": true,
         "esModuleInterop": true,
