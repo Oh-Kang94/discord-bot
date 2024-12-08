@@ -1,5 +1,5 @@
 // src/controller/transaction_controller.ts
-import { Client } from "discord.js";
+import { AttachmentBuilder, Client, TextChannel } from "discord.js";
 import { Command } from "../model/command";
 import { TransactionType } from "../model/transaction";
 import { ITransactionService } from "../service/transaction_service";
@@ -22,6 +22,7 @@ export class TransactionController {
       this.createWithdrawalCommand(),
       this.createListCommand(),
       this.createHelpCommand(),
+      this.downloadCsv(this.client),
     ];
 
     commands.forEach((cmd) => this.commandHandler.registerCommand(cmd));
@@ -107,6 +108,76 @@ export class TransactionController {
     };
   }
 
+  private downloadCsv(client: Client): Command {
+    const usage: string = "!다운로드 - .csv로 다운";
+    return {
+      name: "다운로드",
+      usage: usage,
+      async execute(message, _, transactionService) {
+        try {
+          const transactions = await transactionService.getTransactions();
+
+          if (transactions.length === 0) {
+            message.reply("아직까지 쓴 내역이 없다.");
+            return;
+          }
+
+          // CSV 파일 형식으로 변환
+          const csvRows: string[] = [];
+          // CSV 헤더 추가
+          csvRows.push("날짜,설명,유형,금액,잔액");
+
+          // 트랜잭션 데이터 변환
+          transactions.forEach((tx) => {
+            const date = tx.createdAt
+              .toDate()
+              .toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              .replace(/\//g, ".")
+              .replace(",", "");
+            const description = tx.description;
+            const type = tx.type === TransactionType.DEPOSIT ? "입금" : "출금";
+            const price = tx.price;
+            const balance = tx.balance;
+
+            csvRows.push(`${date},${description},${type},${price},${balance}`);
+          });
+
+          // CSV 문자열 만들기
+          const csvContent = csvRows.join("\n");
+          const csvBuffer = Buffer.from("\uFEFF" + csvContent, "utf-8");
+
+          // AttachmentBuilder로 첨부파일 생성
+          const attachment = new AttachmentBuilder(csvBuffer, {
+            name: `${new Date()
+              .toLocaleDateString("ko-KR")
+              .replace(/\//g, ".")}_정리된 csv.csv`,
+          });
+
+          const channel: TextChannel = client.channels.cache.get(
+            message.channelId
+          ) as TextChannel;
+
+          // 메시지에 파일 첨부
+          await channel.send({
+            content: "여기 요청하신 CSV 파일입니다!",
+            files: [attachment],
+          });
+
+          // 메시지로 CSV 파일 전송
+        } catch (error) {
+          console.log(error);
+          message.reply("트랜잭션 목록 조회 중 오류가 발생했습니다.");
+        }
+      },
+    };
+  }
+
   private createListCommand(): Command {
     const usage: string = "!조회 - 최신순으로 얼마 썼는지 알려준다.";
     return {
@@ -166,7 +237,6 @@ export class TransactionController {
   public generateHelpMessage(): string {
     let helpMessage = "📋 사용 가능한 명령어:\n";
     try {
-      // 등록된 명령어 리스트를 기반으로 도움말 메시지 작성
       const commands: Command[] = this.commandHandler.getCommands();
 
       commands.forEach((cmd) => {
