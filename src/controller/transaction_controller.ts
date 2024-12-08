@@ -62,8 +62,12 @@ export class TransactionController {
             TransactionType.DEPOSIT
           );
           const balance = await transactionService.getCurrentBalance();
+          const formattedPrice = new Intl.NumberFormat("ko-KR").format(price);
+          const formattedBalance = new Intl.NumberFormat("ko-KR").format(
+            balance
+          );
           message.reply(
-            `입금 완료: ${description}, 금액: ${price}\n총 금액 : ${balance}`
+            `입금 완료: ${description}, \n금액: ${formattedPrice}\n총 금액 : ${formattedBalance}`
           );
         } catch (error) {
           console.error(error);
@@ -100,8 +104,12 @@ export class TransactionController {
             TransactionType.WITHDRAWAL
           );
           const balance = await transactionService.getCurrentBalance();
+          const formattedPrice = new Intl.NumberFormat("ko-KR").format(price);
+          const formattedBalance = new Intl.NumberFormat("ko-KR").format(
+            balance
+          );
           message.reply(
-            `사용 완료: ${description}, 금액: ${price}\n총 금액 : ${balance}`
+            `사용 완료: ${description}, \n금액: ${formattedPrice}\n총 금액 : ${formattedBalance}`
           );
         } catch (error) {
           message.reply("사용 처리 중 오류가 발생했습니다.");
