@@ -2,7 +2,7 @@
   "name": "discord-bot-account",
   "version": "1.0.0",
   "description": "Discord bot for accounting automation for travel",
-  "main": "bot.js",
+  "main": "bot.ts",
   "scripts": {
     "start:dev": "npm run build:live",
     "start:prod": "ts-node src/bot.ts",
