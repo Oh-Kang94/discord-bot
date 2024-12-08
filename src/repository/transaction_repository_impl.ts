@@ -5,25 +5,23 @@ import { Client } from "discord.js";
 
 // 트랜잭션 리포지토리 인터페이스
 export interface ITransactionRepository {
-  save(transaction: Transaction): Promise<string>;
-  findLatest(): Promise<Transaction | null>;
+  save(transaction: Transaction, guild: string): Promise<string>;
+  findLatest(guild: string): Promise<Transaction | null>;
   /** 최신순 검색*/
-  findAll(): Promise<Transaction[]>;
-  delete(docRef: admin.firestore.DocumentData): Promise<boolean>;
+  findAll(guild: string): Promise<Transaction[]>;
+  delete(docRef: admin.firestore.DocumentData, guild: string): Promise<boolean>;
 }
 
 export class TransactionRepository implements ITransactionRepository {
   private db: admin.firestore.Firestore;
-  private COLLECTION_NAME: string;
 
-  constructor(db: admin.firestore.Firestore, client: Client) {
+  constructor(db: admin.firestore.Firestore) {
     this.db = db;
-    this.COLLECTION_NAME = client.user?.tag ?? `${Date()}`;
   }
 
-  async save(transaction: Transaction): Promise<string> {
+  async save(transaction: Transaction, guild: string): Promise<string> {
     const docRef = await this.db
-      .collection(this.COLLECTION_NAME)
+      .collection(guild)
       .add(transaction);
     return docRef.id;
   }
@@ -42,9 +40,9 @@ export class TransactionRepository implements ITransactionRepository {
     }
   }
 
-  async findLatestDocs(): Promise<admin.firestore.DocumentData> {
+  async findLatestDocs(guild: string): Promise<admin.firestore.DocumentData> {
     const snapshot = await this.db
-      .collection(this.COLLECTION_NAME)
+      .collection(guild)
       // .where("deletedAt", "==", null)
       .orderBy("createdAt", "desc")
       .limit(1)
@@ -53,9 +51,9 @@ export class TransactionRepository implements ITransactionRepository {
     return snapshot.docs[0];
   }
 
-  async findLatest(): Promise<Transaction | null> {
+  async findLatest(guild: string): Promise<Transaction | null> {
     const snapshot = await this.db
-      .collection(this.COLLECTION_NAME)
+      .collection(guild)
       // .where("deletedAt", "==", null)
       .orderBy("createdAt", "desc")
       .limit(1)
@@ -64,9 +62,9 @@ export class TransactionRepository implements ITransactionRepository {
     return snapshot.empty ? null : (snapshot.docs[0].data() as Transaction);
   }
 
-  async findAll(): Promise<Transaction[]> {
+  async findAll(guild: string): Promise<Transaction[]> {
     const snapshot = await this.db
-      .collection(this.COLLECTION_NAME)
+      .collection(guild)
       // .where("deletedAt", "==", null)
       .orderBy("createdAt", "desc")
       .get();

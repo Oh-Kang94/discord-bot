@@ -34,13 +34,13 @@ const client = new Client({
 });
 
 const BOT_TOKEN = process.env.DISCORD_BOT_KEY;
-
+const ALLOWED_CHANNEL_NAMES = ["bot-회계"];
 // Check Discord Bot Start
 client.on("ready", () => {
   console.log(`Started in as ${client.user?.tag}!`);
 
   // Command
-  const transactionRepository = new TransactionRepository(db, client);
+  const transactionRepository = new TransactionRepository(db);
   const transactionService = new TransactionService(transactionRepository);
   const transactionController = new TransactionController(
     client,
@@ -48,7 +48,6 @@ client.on("ready", () => {
   );
 
   const helpMsg = transactionController.generateHelpMessage();
-
   const welcomeMsg = `Oh-Kang's 계좌 관리 Bot\n${helpMsg}`;
 
   client.guilds.cache.forEach((guild) => {
@@ -56,6 +55,7 @@ client.on("ready", () => {
       .filter(
         (channel) =>
           channel.isTextBased() &&
+          channel.name === ALLOWED_CHANNEL_NAMES[0] &&
           channel.permissionsFor(client.user!)?.has("SendMessages")
       )
       .forEach((channel) => {
@@ -68,6 +68,5 @@ client.on("ready", () => {
       });
   });
 });
-
 // Initialize Discord Bot
 client.login(BOT_TOKEN);

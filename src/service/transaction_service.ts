@@ -7,15 +7,16 @@ export interface ITransactionService {
   createTransaction(
     price: number,
     description: string,
-    type: TransactionType
+    type: TransactionType,
+    guild: string
   ): Promise<Transaction>;
 
   /** 최신순 검색*/
-  getTransactions(): Promise<Transaction[]>;
+  getTransactions(guild: string): Promise<Transaction[]>;
 
-  getCurrentBalance(): Promise<number>;
+  getCurrentBalance(guild: string): Promise<number>;
 
-  deleteTransaction(): Promise<boolean>;
+  deleteTransaction(guild: string): Promise<boolean>;
 }
 
 export class TransactionService implements ITransactionService {
@@ -25,9 +26,9 @@ export class TransactionService implements ITransactionService {
     this.repository = repository;
   }
 
-  async deleteTransaction(): Promise<boolean> {
+  async deleteTransaction(guild: string): Promise<boolean> {
     try {
-      const docRef = (await this.repository.findLatestDocs()).ref;
+      const docRef = (await this.repository.findLatestDocs(guild)).ref;
       return await this.repository.delete(docRef);
     } catch (error) {
       return false;
@@ -37,9 +38,10 @@ export class TransactionService implements ITransactionService {
   async createTransaction(
     price: number,
     description: string,
-    type: TransactionType
+    type: TransactionType,
+    guild: string
   ): Promise<Transaction> {
-    const latestTransaction = await this.repository.findLatest();
+    const latestTransaction = await this.repository.findLatest(guild);
     const currentBalance = latestTransaction ? latestTransaction.balance : 0;
 
     const newTransaction: Transaction = {
@@ -54,17 +56,17 @@ export class TransactionService implements ITransactionService {
       deletedAt: null,
     };
 
-    await this.repository.save(newTransaction);
+    await this.repository.save(newTransaction, guild);
 
     return newTransaction;
   }
 
-  async getTransactions(): Promise<Transaction[]> {
-    return this.repository.findAll();
+  async getTransactions(guild: string): Promise<Transaction[]> {
+    return this.repository.findAll(guild);
   }
 
-  async getCurrentBalance(): Promise<number> {
-    const latestTransaction = await this.repository.findLatest();
+  async getCurrentBalance(guild: string): Promise<number> {
+    const latestTransaction = await this.repository.findLatest(guild);
     return latestTransaction ? latestTransaction.balance : 0;
   }
 }

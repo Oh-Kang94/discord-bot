@@ -59,9 +59,12 @@ export class TransactionController {
           const transaction = await transactionService.createTransaction(
             price,
             description,
-            TransactionType.DEPOSIT
+            TransactionType.DEPOSIT,
+            message.guild!.id
           );
-          const balance = await transactionService.getCurrentBalance();
+          const balance = await transactionService.getCurrentBalance(
+            message.guild!.id
+          );
           const formattedPrice = new Intl.NumberFormat("ko-KR").format(price);
           const formattedBalance = new Intl.NumberFormat("ko-KR").format(
             balance
@@ -101,9 +104,12 @@ export class TransactionController {
           const transaction = await transactionService.createTransaction(
             price,
             description,
-            TransactionType.WITHDRAWAL
+            TransactionType.WITHDRAWAL,
+            message.guild!.id
           );
-          const balance = await transactionService.getCurrentBalance();
+          const balance = await transactionService.getCurrentBalance(
+            message.guild!.id
+          );
           const formattedPrice = new Intl.NumberFormat("ko-KR").format(price);
           const formattedBalance = new Intl.NumberFormat("ko-KR").format(
             balance
@@ -125,7 +131,9 @@ export class TransactionController {
       usage: usage,
       async execute(message, _, transactionService) {
         try {
-          const transactions = await transactionService.getTransactions();
+          const transactions = await transactionService.getTransactions(
+            message.guild!.id
+          );
 
           if (transactions.length === 0) {
             message.reply("아직까지 쓴 내역이 없다.");
@@ -195,7 +203,9 @@ export class TransactionController {
       usage: usage,
       async execute(message, _, transactionService) {
         try {
-          const transactions = await transactionService.getTransactions();
+          const transactions = await transactionService.getTransactions(
+            message.guild!.id
+          );
 
           if (transactions.length === 0) {
             message.reply("아직까지 쓴 내역이 없다.");
@@ -245,8 +255,9 @@ export class TransactionController {
       usage: usage,
       async execute(message, _, transactionService) {
         try {
-          const transactionResult =
-            await transactionService.deleteTransaction();
+          const transactionResult = await transactionService.deleteTransaction(
+            message.guild!.id
+          );
 
           if (transactionResult === false) {
             message.reply("아직까지 쓴 내역이 없다.");
@@ -254,7 +265,9 @@ export class TransactionController {
           }
 
           let replyMessage = "";
-          const transactions = await transactionService.getTransactions();
+          const transactions = await transactionService.getTransactions(
+            message.guild!.id
+          );
 
           if (transactions.length === 0) {
             message.reply("아직까지 쓴 내역이 없다.");
@@ -303,7 +316,14 @@ export class TransactionController {
       name: "도움말",
       usage: "!도움말 - 도움말 보기",
       async execute(message, _, transactionService) {
-        message.reply(helpMessage);
+        message.reply(`
+          📋 사용 가능한 명령어:
+• !입금 <가격> <설명> - 입금
+• !사용 <가격> <설명> - 사용처리
+• !조회 - 최신순으로 얼마 썼는지 알려준다.
+• !도움말 - 도움말 보기
+• !다운로드 - .csv로 다운
+• !삭제 - 제일 최신 항목을 삭제한다.`);
       },
     };
   }
