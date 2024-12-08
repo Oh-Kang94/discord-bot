@@ -23,6 +23,7 @@ export class TransactionController {
       this.createListCommand(),
       this.createHelpCommand(),
       this.downloadCsv(this.client),
+      this.deleteLatestTransaction(),
     ];
 
     commands.forEach((cmd) => this.commandHandler.registerCommand(cmd));
@@ -65,6 +66,7 @@ export class TransactionController {
             `입금 완료: ${description}, 금액: ${price}\n총 금액 : ${balance}`
           );
         } catch (error) {
+          console.error(error);
           message.reply("입금 처리 중 오류가 발생했습니다.");
         }
       },
@@ -191,13 +193,19 @@ export class TransactionController {
             message.reply("아직까지 쓴 내역이 없다.");
             return;
           }
-          console.log(transactions[0]);
+
           let replyMessage = `📋 현재까지 쓴 목록(${transactions[0].createdAt
             .toDate()
             .toLocaleDateString("ko-KR")
             .replace(/\//g, ".")}) : \n`;
 
           transactions.forEach((tx) => {
+            const formattedBalance = new Intl.NumberFormat("ko-KR").format(
+              tx.balance
+            );
+            const formattedPrice = new Intl.NumberFormat("ko-KR").format(
+              tx.price
+            );
             replyMessage += `🔹 [${tx.createdAt
               .toDate()
               .toLocaleString("ko-KR", {
@@ -208,9 +216,68 @@ export class TransactionController {
                 minute: "2-digit",
               })
               .replace(/\//g, ".")
-              .replace(",", "")}] ${tx.description}, ${
+              .replace(",", "")}] 설명: ${tx.description}, ${
               tx.type === 0 ? "입금" : "출금"
-            }: ${tx.price}, 총 금액: ${tx.balance}\n`;
+            }: ${formattedPrice}, 총 금액: ${formattedBalance}\n`;
+          });
+
+          message.reply(replyMessage);
+        } catch (error) {
+          console.log(error);
+          message.reply("트랜잭션 목록 조회 중 오류가 발생했습니다.");
+        }
+      },
+    };
+  }
+
+  private deleteLatestTransaction(): Command {
+    const usage: string = "!삭제 - 제일 최신 항목을 삭제한다.";
+    return {
+      name: "삭제",
+      usage: usage,
+      async execute(message, _, transactionService) {
+        try {
+          const transactionResult =
+            await transactionService.deleteTransaction();
+
+          if (transactionResult === false) {
+            message.reply("아직까지 쓴 내역이 없다.");
+            return;
+          }
+
+          let replyMessage = "";
+          const transactions = await transactionService.getTransactions();
+
+          if (transactions.length === 0) {
+            message.reply("아직까지 쓴 내역이 없다.");
+            return;
+          }
+
+          replyMessage += `📋 현재까지 쓴 목록(${transactions[0].createdAt
+            .toDate()
+            .toLocaleDateString("ko-KR")
+            .replace(/\//g, ".")}) : \n`;
+
+          transactions.forEach((tx) => {
+            const formattedBalance = new Intl.NumberFormat("ko-KR").format(
+              tx.balance
+            );
+            const formattedPrice = new Intl.NumberFormat("ko-KR").format(
+              tx.price
+            );
+            replyMessage += `🔹 [${tx.createdAt
+              .toDate()
+              .toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              .replace(/\//g, ".")
+              .replace(",", "")}] 설명: ${tx.description}, ${
+              tx.type === 0 ? "입금" : "출금"
+            }: ${formattedPrice}, 총 금액: ${formattedBalance}\n`;
           });
 
           message.reply(replyMessage);
@@ -224,7 +291,6 @@ export class TransactionController {
 
   public createHelpCommand(): Command {
     const helpMessage = this.generateHelpMessage();
-    console.log(helpMessage);
     return {
       name: "도움말",
       usage: "!도움말 - 도움말 보기",
@@ -247,4 +313,46 @@ export class TransactionController {
       return `도움말 불러오기 실패 ${e}`;
     }
   }
+
+  // execute 함수 분리
+
+  // private async executeListCommand(
+  //   message: any,
+  //   transactionService: any
+  // ): Promise<string | null> {
+  //   try {
+  //     const transactions = await transactionService.getTransactions();
+
+  //     if (transactions.length === 0) {
+
+  //       return "아직까지 쓴 내역이 없다.";
+  //     }
+  //     console.log(transactions[0]);
+  //     let replyMessage = `📋 현재까지 쓴 목록(${transactions[0].createdAt
+  //       .toDate()
+  //       .toLocaleDateString("ko-KR")
+  //       .replace(/\//g, ".")}) : \n`;
+
+  //     transactions.forEach((tx: any) => {
+  //       replyMessage += `🔹 [${tx.createdAt
+  //         .toDate()
+  //         .toLocaleString("ko-KR", {
+  //           year: "numeric",
+  //           month: "2-digit",
+  //           day: "2-digit",
+  //           hour: "2-digit",
+  //           minute: "2-digit",
+  //         })
+  //         .replace(/\//g, ".")
+  //         .replace(",", "")}] ${tx.description}, ${
+  //         tx.type === 0 ? "입금" : "출금"
+  //       }: ${tx.price}, 총 금액: ${tx.balance}\n`;
+  //     });
+
+  //     return replyMessage;
+  //   } catch (error) {
+  //     console.log(error);
+  //     return null;
+  //   }
+  // }
 }

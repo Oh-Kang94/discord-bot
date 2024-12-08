@@ -14,4 +14,5 @@ export interface Transaction {
   type: TransactionType;
   balance: number;
   createdAt: Timestamp;
+  deletedAt: Timestamp | null;
 }

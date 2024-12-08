@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import "dotenv/config";
 import * as admin from "firebase-admin";
-import { FirebaseTransactionRepository } from "./repository/transaction_repository_impl";
+import { TransactionRepository } from "./repository/transaction_repository_impl";
 import { TransactionController } from "./controller/transaction_controller";
 import { TransactionService } from "./service/transaction_service";
 
@@ -40,7 +40,7 @@ client.on("ready", () => {
   console.log(`Started in as ${client.user?.tag}!`);
 
   // Command
-  const transactionRepository = new FirebaseTransactionRepository(db, client);
+  const transactionRepository = new TransactionRepository(db, client);
   const transactionService = new TransactionService(transactionRepository);
   const transactionController = new TransactionController(
     client,
