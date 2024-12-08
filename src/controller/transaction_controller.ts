@@ -45,7 +45,7 @@ export class TransactionController {
         }
 
         const [priceString, ...descriptionParts] = args;
-        const price = parseFloat(priceString);
+        const price = parseFloat(priceString.replace(",", ""));
         const description = descriptionParts.join(" ");
 
         if (isNaN(price)) {
@@ -59,7 +59,10 @@ export class TransactionController {
             description,
             TransactionType.DEPOSIT
           );
-          message.reply(`입금 완료: ${description}, 금액: ${price}`);
+          const balance = await transactionService.getCurrentBalance();
+          message.reply(
+            `입금 완료: ${description}, 금액: ${price}\n총 금액 : ${balance}`
+          );
         } catch (error) {
           message.reply("입금 처리 중 오류가 발생했습니다.");
         }
@@ -79,7 +82,7 @@ export class TransactionController {
         }
 
         const [priceString, ...descriptionParts] = args;
-        const price = parseFloat(priceString);
+        const price = parseFloat(priceString.replace(",", ""));
         const description = descriptionParts.join(" ");
 
         if (isNaN(price)) {
@@ -117,14 +120,31 @@ export class TransactionController {
             message.reply("아직까지 쓴 내역이 없다.");
             return;
           }
+          console.log(transactions[0]);
+          let replyMessage = `📋 현재까지 쓴 목록(${transactions[0].createdAt
+            .toDate()
+            .toLocaleDateString("ko-KR")
+            .replace(/\//g, ".")}) : \n`;
 
-          let replyMessage = `📋 현재까지 쓴 목록(${transactions[0].createdAt.toDateString}): \n`;
           transactions.forEach((tx) => {
-            replyMessage += `🔹 [${tx.type}] ${tx.description}, 금액: ${tx.price}, 총 금액: ${tx.balance}\n`;
+            replyMessage += `🔹 [${tx.createdAt
+              .toDate()
+              .toLocaleString("ko-KR", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+              .replace(/\//g, ".")
+              .replace(",", "")}] ${tx.description}, ${
+              tx.type === 0 ? "입금" : "출금"
+            }: ${tx.price}, 총 금액: ${tx.balance}\n`;
           });
 
           message.reply(replyMessage);
         } catch (error) {
+          console.log(error);
           message.reply("트랜잭션 목록 조회 중 오류가 발생했습니다.");
         }
       },

@@ -1,4 +1,5 @@
 // ./src/service/transaction_service.ts
+import { Timestamp } from "@google-cloud/firestore";
 import { Transaction, TransactionType } from "../model/transaction";
 import { ITransactionRepository } from "../repository/transaction_repository_impl";
 
@@ -38,7 +39,7 @@ export class TransactionService implements ITransactionService {
         type === TransactionType.DEPOSIT
           ? currentBalance + price
           : currentBalance - price,
-      createdAt: new Date(),
+      createdAt: Timestamp.fromDate(new Date()),
     };
 
     await this.repository.save(newTransaction);

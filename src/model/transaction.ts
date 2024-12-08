@@ -1,3 +1,5 @@
+import { Timestamp } from "@google-cloud/firestore";
+
 // 트랜잭션 타입 정의
 export enum TransactionType {
   DEPOSIT,
@@ -11,5 +13,5 @@ export interface Transaction {
   description: string;
   type: TransactionType;
   balance: number;
-  createdAt: Date;
+  createdAt: Timestamp;
 }
