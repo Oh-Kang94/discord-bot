@@ -93,7 +93,10 @@ export class TransactionController {
             description,
             TransactionType.WITHDRAWAL
           );
-          message.reply(`사용 완료: ${description}, 금액: ${price}`);
+          const balance = await transactionService.getCurrentBalance();
+          message.reply(
+            `사용 완료: ${description}, 금액: ${price}\n총 금액 : ${balance}`
+          );
         } catch (error) {
           message.reply("사용 처리 중 오류가 발생했습니다.");
         }
@@ -115,7 +118,7 @@ export class TransactionController {
             return;
           }
 
-          let replyMessage = `📋 현재까지 쓴 목록(${transactions[0].createdAt}): \n`;
+          let replyMessage = `📋 현재까지 쓴 목록(${transactions[0].createdAt.toDateString}): \n`;
           transactions.forEach((tx) => {
             replyMessage += `🔹 [${tx.type}] ${tx.description}, 금액: ${tx.price}, 총 금액: ${tx.balance}\n`;
           });
@@ -133,7 +136,7 @@ export class TransactionController {
     console.log(helpMessage);
     return {
       name: "도움말",
-      usage: "도움말을 보여준다.",
+      usage: "!도움말 - 도움말 보기",
       async execute(message, _, transactionService) {
         message.reply(helpMessage);
       },
@@ -150,7 +153,7 @@ export class TransactionController {
         helpMessage += `• ${cmd.usage}\n`;
       });
       return helpMessage;
-    } catch (e){
+    } catch (e) {
       return `도움말 불러오기 실패 ${e}`;
     }
   }

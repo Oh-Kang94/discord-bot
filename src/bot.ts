@@ -35,19 +35,21 @@ const client = new Client({
 
 const BOT_TOKEN = process.env.DISCORD_BOT_KEY;
 
-// Command
-const transactionRepository = new FirebaseTransactionRepository(db, client);
-const transactionService = new TransactionService(transactionRepository);
-const transactionController = new TransactionController(
-  client,
-  transactionService
-);
-
 // Check Discord Bot Start
 client.on("ready", () => {
   console.log(`Started in as ${client.user?.tag}!`);
 
+  // Command
+  const transactionRepository = new FirebaseTransactionRepository(db, client);
+  const transactionService = new TransactionService(transactionRepository);
+  const transactionController = new TransactionController(
+    client,
+    transactionService
+  );
+
   const helpMsg = transactionController.generateHelpMessage();
+
+  const welcomeMsg = `Oh-Kang's 계좌 관리 Bot\n${helpMsg}`;
 
   client.guilds.cache.forEach((guild) => {
     guild.channels.cache
@@ -58,7 +60,7 @@ client.on("ready", () => {
       )
       .forEach((channel) => {
         (channel as TextChannel)
-          .send(helpMsg)
+          .send(welcomeMsg)
           .then(() =>
             console.log(`도움말을 채널 "${channel.name}"에 전송했습니다.`)
           )

@@ -23,8 +23,8 @@ export class CommandHandler {
     const args = message.content.slice(prefix.length).trim().split(/ +/);
     const commandName = args.shift()?.toLowerCase();
     if (!commandName) return;
-
     const command = this.commands.get(commandName);
+
     if (!command) return;
 
     try {
